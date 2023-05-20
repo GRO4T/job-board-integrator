@@ -1,7 +1,6 @@
 import logging
 
 from selenium import webdriver
-from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 
 # ---------------------------------------------------------------------------- #
@@ -61,17 +60,20 @@ for i in range(3):
     salaries = driver.find_elements(By.XPATH, "//div[contains(text(), 'PLN') or contains(text(), 'Undisclosed Salary')]")
     salaries = list(filter(lambda x: x.text and x.text.strip(), salaries))
 
+    # Scrape offer URLs
+    offer_urls = driver.find_elements(By.XPATH, "//a[contains(@href, 'offers')]")
+
     # Print data in a tabular form
-    columns = ["Location", "Company", "Job Title", "Salary"]
-    format_row = "{:>30}{:>50}{:>70}{:>30}"
-    print("-" * 180)
+    columns = ["Location", "Company", "Job Title", "Salary", "Offer URL"]
+    format_row = "{:>30}{:>50}{:>70}{:>30}{:>120}"
+    print("-" * 300)
     print(format_row.format(*columns))
-    print("-" * 180)
-    for (location, company, job_title, salary) in zip(locations, company_names, job_titles, salaries):
+    print("-" * 300)
+    for (location, company, job_title, salary, offer_url) in zip(locations, company_names, job_titles, salaries, offer_urls):
         location_description = location.find_elements(By.XPATH, "./span")
         location_text = " ".join(map(lambda x: x.text, location_description))
 
-        print(format_row.format(location_text, company.text, job_title.text, salary.text))
+        print(format_row.format(location_text, company.text, job_title.text, salary.text, offer_url.get_attribute("href")))
 
     # Scroll down to the bottom
     driver.execute_script(f"document.querySelector('div.{scrollable_container}').scrollBy(0, document.body.scrollHeight);")
