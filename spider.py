@@ -46,19 +46,34 @@ SCROLL_PAUSE_TIME = 0.5
 # Get scroll height
 #while True:
 for i in range(3):
+    # Scrape location
+    location_xpath = "//*[local-name()='svg']/*[local-name()='path' and @d='M12 12c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm6-1.8C18 6.57 15.35 4 12 4s-6 2.57-6 6.2c0 2.34 1.95 5.44 6 9.14 4.05-3.7 6-6.8 6-9.14zM12 2c4.2 0 8 3.22 8 8.2 0 3.32-2.67 7.25-8 11.8-5.33-4.55-8-8.48-8-11.8C4 5.22 7.8 2 12 2z']/../.."
+    locations = driver.find_elements(By.XPATH, location_xpath)
+
+    # Scrape company names
+    company_xpath = "//*[local-name()='svg']/*[local-name()='path' and @d='M12 7V3H2v18h20V7H12zM6 19H4v-2h2v2zm0-4H4v-2h2v2zm0-4H4V9h2v2zm0-4H4V5h2v2zm4 12H8v-2h2v2zm0-4H8v-2h2v2zm0-4H8V9h2v2zm0-4H8V5h2v2zm10 12h-8v-2h2v-2h-2v-2h2v-2h-2V9h8v10zm-2-8h-2v2h2v-2zm0 4h-2v2h2v-2z']/../.."
+    company_names = driver.find_elements(By.XPATH, company_xpath)
+
+    # Scrape job titles
     job_titles = driver.find_elements(By.CLASS_NAME, job_title_element_class)
+
+    # Scrape salaries
     salaries = driver.find_elements(By.XPATH, "//div[contains(text(), 'PLN') or contains(text(), 'Undisclosed Salary')]")
     salaries = list(filter(lambda x: x.text and x.text.strip(), salaries))
 
-    columns = ["Job Title", "Salary"]
-    format_row = "{:>50}" * len(columns)
-    print("-" * 50 * len(columns))
+    # Print data in a tabular form
+    columns = ["Location", "Company", "Job Title", "Salary"]
+    format_row = "{:>30}{:>50}{:>70}{:>30}"
+    print("-" * 180)
     print(format_row.format(*columns))
-    print("-" * 50 * len(columns))
-    for (job_title, salary) in zip(job_titles, salaries):
-        print(format_row.format(job_title.text, salary.text))
+    print("-" * 180)
+    for (location, company, job_title, salary) in zip(locations, company_names, job_titles, salaries):
+        location_description = location.find_elements(By.XPATH, "./span")
+        location_text = " ".join(map(lambda x: x.text, location_description))
 
-    # Scroll down to bottom
+        print(format_row.format(location_text, company.text, job_title.text, salary.text))
+
+    # Scroll down to the bottom
     driver.execute_script(f"document.querySelector('div.{scrollable_container}').scrollBy(0, document.body.scrollHeight);")
 
     # Wait to load page
